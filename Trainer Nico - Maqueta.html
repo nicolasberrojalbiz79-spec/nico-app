@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trainer Nico — Prototipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f0eee9; }
+  body { font-family: 'Inter', -apple-system, system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="browser-window.jsx"></script>
+<script type="text/babel" src="data.jsx"></script>
+<script type="text/babel" src="student-screens.jsx"></script>
+<script type="text/babel" src="admin-screens.jsx"></script>
+
+<script type="text/babel">
+const STUDENT_W = 390, STUDENT_H = 844;
+const ADMIN_W = 1320, ADMIN_H = 820;
+
+function AdminArtboardFrame({ url, title, children }) {
+  return (
+    <ChromeWindow
+      width={ADMIN_W} height={ADMIN_H}
+      tabs={[
+        { title: 'Trainer Nico · Admin' },
+        { title: 'Calendario' },
+        { title: 'Notion' },
+      ]}
+      activeIndex={0}
+      url={url || 'app.trainernico.com'}
+    >
+      <div style={{ width: '100%', height: '100%' }}>{children}</div>
+    </ChromeWindow>
+  );
+}
+
+function App() {
+  return (
+    <DesignCanvas>
+      <DCSection id="alumno" title="App del Alumno · iPhone" subtitle="Mobile-first. Dark + lima · 5 pantallas">
+        <DCArtboard id="hoy" label="01 · Hoy" width={STUDENT_W} height={STUDENT_H} style={{ background: '#0A0A0A', borderRadius: 48 }}>
+          <ScreenHoy />
+        </DCArtboard>
+        <DCArtboard id="rutina" label="02 · Rutina en curso" width={STUDENT_W} height={STUDENT_H} style={{ background: '#0A0A0A', borderRadius: 48 }}>
+          <ScreenRutina />
+        </DCArtboard>
+        <DCArtboard id="ejercicio" label="03 · Detalle de ejercicio" width={STUDENT_W} height={STUDENT_H} style={{ background: '#0A0A0A', borderRadius: 48 }}>
+          <ScreenEjercicio />
+        </DCArtboard>
+        <DCArtboard id="progreso" label="04 · Progreso" width={STUDENT_W} height={STUDENT_H} style={{ background: '#0A0A0A', borderRadius: 48 }}>
+          <ScreenProgreso />
+        </DCArtboard>
+        <DCArtboard id="nutricion" label="05 · Nutrición" width={STUDENT_W} height={STUDENT_H} style={{ background: '#0A0A0A', borderRadius: 48 }}>
+          <ScreenNutricion />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="admin" title="Panel del Trainer · Desktop" subtitle="1320×820 · navegación lateral + acción contextual">
+        <DCArtboard id="dashboard" label="01 · Dashboard" width={ADMIN_W} height={ADMIN_H}>
+          <AdminArtboardFrame url="app.trainernico.com/dashboard">
+            <AdminDashboard />
+          </AdminArtboardFrame>
+        </DCArtboard>
+        <DCArtboard id="alumnos" label="02 · Alumnos" width={ADMIN_W} height={ADMIN_H}>
+          <AdminArtboardFrame url="app.trainernico.com/alumnos">
+            <AdminAlumnos />
+          </AdminArtboardFrame>
+        </DCArtboard>
+        <DCArtboard id="rutinas" label="03 · Constructor de rutinas" width={ADMIN_W} height={ADMIN_H}>
+          <AdminArtboardFrame url="app.trainernico.com/rutinas/lucia-romero/s6">
+            <AdminRutinas />
+          </AdminArtboardFrame>
+        </DCArtboard>
+        <DCArtboard id="catalogo" label="04 · Catálogo de ejercicios" width={ADMIN_W} height={ADMIN_H}>
+          <AdminArtboardFrame url="app.trainernico.com/ejercicios">
+            <AdminCatalogo />
+          </AdminArtboardFrame>
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+// Wait for all babel scripts to register before mounting
+const tick = () => {
+  if (window.ScreenHoy && window.AdminDashboard && window.DesignCanvas && window.IOSDevice && window.ChromeWindow) {
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  } else {
+    setTimeout(tick, 30);
+  }
+};
+tick();
+</script>
+</body>
+</html>
