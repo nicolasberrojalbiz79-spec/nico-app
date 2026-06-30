@@ -33,7 +33,10 @@ const MONO = '"JetBrains Mono", "SF Mono", Menlo, monospace';
 // ── Real exercise catalog from Nico's Drive (≈95 exercises w/ infographics) ──
 // Filled from Supabase at boot (in-place mutation keeps all references live).
 const EXERCISES = [];
-function tnSetExercises(arr) { EXERCISES.length = 0; arr.forEach((e) => EXERCISES.push(e)); }
+function tnSetExercises(arr) { EXERCISES.length = 0; (arr || []).forEach((e) => EXERCISES.push(e)); }
+// Sembrar con la biblioteca REAL (94 fichas con imágenes) para que el catálogo
+// nunca quede vacío, aunque la tabla tn_exercises esté vacía o falle la carga.
+if (typeof window !== 'undefined' && window.LIBRARY && window.LIBRARY.length) tnSetExercises(window.LIBRARY);
 
 const GROUPS = ['Pecho', 'Espalda', 'Hombros', 'Bíceps', 'Tríceps', 'Cuádriceps', 'Isquios', 'Glúteos', 'Gemelos'];
 const EQUIPMENT = ['Barra', 'Mancuernas', 'Máquina', 'Polea', 'Peso corporal'];

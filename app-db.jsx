@@ -41,9 +41,14 @@ function exRowToObj(r) {
   };
 }
 async function dbLoadExercises() {
-  const { data, error } = await sb.from('tn_exercises').select('*').order('muscle_group');
-  if (error) throw error;
-  return (data || []).map(exRowToObj);
+  try {
+    const { data, error } = await sb.from('tn_exercises').select('*').order('muscle_group');
+    if (error) throw error;
+    const rows = (data || []).map(exRowToObj);
+    if (rows.length) return rows;
+  } catch (e) { console.warn('[dbLoadExercises] tabla vacía/err → biblioteca local:', e.message); }
+  // Sin datos en la base → usar la biblioteca real local (94 ejercicios con fichas).
+  return (window.LIBRARY || []).slice();
 }
 
 // ── Alumnos ───────────────────────────────────────────────────

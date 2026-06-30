@@ -14,23 +14,53 @@ function useMe() {
 
 // The active routine resolves reactively from the logged-in student + any
 // admin override (assigning a routine in the panel reflects here on next render).
+// Devuelve null si el alumno todavía no tiene una rutina asignada (en vez de
+// romper la pantalla).
 function useActiveRoutine() {
   const sid = useStore((s) => s.studentId);
   const ov = useStore((s) => s.studentOverrides[sid]);
-  const rid = (ov && ov.routineId) || (findStudent(sid) || {}).routineId || 'hipertrofia-ul-int';
-  return React.useMemo(() => resolveRoutine(rid), [rid]);
+  const rid = (ov && ov.routineId) || (findStudent(sid) || {}).routineId;
+  return React.useMemo(() => {
+    return resolveRoutine(rid)
+      || (ROUTINES.length ? resolveRoutine(ROUTINES[0].id) : null);
+  }, [rid]);
 }
 
-// Active workout day (Thursday for the demo) of the student's routine.
+// Elige un día válido para mostrar: el de hoy si tiene ejercicios; si no, el
+// primer día con ejercicios; si no, el primero. Nunca devuelve undefined fuera
+// de rango (lo que rompía la pantalla del alumno).
+function pickTrainingDay(routine) {
+  if (!routine || !routine.days || !routine.days.length) return null;
+  const ti = todayIdx();
+  return routine.days[ti]
+    || routine.days.find((d) => d.exercises && d.exercises.length)
+    || routine.days[0] || null;
+}
+
+// Active workout day of the student's routine (null-safe).
 function useActiveDay() {
   const routine = useActiveRoutine();
-  return routine.days[todayIdx()];
+  return pickTrainingDay(routine);
 }
 
-// Exercises of a day, honoring admin live-edits (customDayExs override).
+// Exercises of a day, honoring admin live-edits (customDayExs override). Null-safe.
 function useDayExs(day) {
-  const override = useStore((s) => s.customDayExs[day.id]);
-  return override || day.exercises;
+  const override = useStore((s) => (day ? s.customDayExs[day.id] : undefined));
+  return override || (day ? (day.exercises || []) : []);
+}
+
+// Estado vacío cuando el alumno todavía no tiene rutina asignada.
+function StuNoRoutine({ me }) {
+  return (
+    <div>
+      <StuHeader greeting="Trainer Nico" title={me ? `Hola, ${me.name.split(' ')[0]}` : 'Hola'} />
+      <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+        <div style={{ width: 64, height: 64, borderRadius: 16, background: T.surface, border: `1px solid ${T.border2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>{Icon.play(T.accent)}</div>
+        <div style={{ fontFamily: FONT, fontSize: 19, fontWeight: 700, color: T.text, marginBottom: 8 }}>Todavía no tenés una rutina</div>
+        <div style={{ fontFamily: FONT, fontSize: 14, color: T.textDim, lineHeight: 1.6, maxWidth: 320, margin: '0 auto' }}>Nico todavía no te asignó tu plan de entrenamiento. En cuanto lo haga, vas a verlo acá.</div>
+      </div>
+    </div>
+  );
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -74,11 +104,12 @@ function StuHeader({ greeting, title, onBack, backLabel, right, sticky = true })
 function ScreenHoy() {
   const me = useMe();
   const routine = useActiveRoutine();
-  const day = routine.days[todayIdx()];
+  const day = pickTrainingDay(routine);
   const exs = useDayExs(day);
   const totalSets = exs.reduce((s, e) => s + e.sets, 0);
-  const w = useStore((s) => s.workout[day.id] || EMPTY_OBJ);
+  const w = useStore((s) => s.workout[(day && day.id) || '__none'] || EMPTY_OBJ);
   const bodyWeight = useStore((s) => s.bodyWeight);
+  if (!routine || !day) return <StuNoRoutine me={me} />;
   const doneSets = Object.values(w).reduce((s, x) => s + (x.setsDone || 0), 0);
   const adherence = totalSets ? Math.round((doneSets / totalSets) * 100) : 0;
   const started = doneSets > 0;
@@ -202,11 +233,12 @@ function ScreenHoy() {
 function ScreenRutina() {
   const day = useActiveDay();
   const exs = useDayExs(day);
-  const w = useStore((s) => s.workout[day.id] || EMPTY_OBJ);
+  const w = useStore((s) => s.workout[(day && day.id) || '__none'] || EMPTY_OBJ);
   const totalSets = exs.reduce((s, e) => s + e.sets, 0);
   const doneSets = exs.reduce((s, e) => s + (w[e.id]?.setsDone || 0), 0);
   const pct = totalSets ? Math.round((doneSets / totalSets) * 100) : 0;
   const activeIdx = exs.findIndex((e) => (w[e.id]?.setsDone || 0) < e.sets);
+  if (!day) return <StuNoRoutine />;
 
   return (
     <div>
@@ -249,7 +281,7 @@ function ScreenRutina() {
 
         {/* Exercise cards */}
         {exs.map((it, i) => {
-          const exObj = findExercise(it.id);
+          const exObj = findExercise(it.id) || { id: it.id, es: it.id, group: '', equipment: '', img: null };
           const setsDone = w[it.id]?.setsDone || 0;
           const done = setsDone >= it.sets;
           const active = i === activeIdx;
@@ -346,7 +378,7 @@ function ScreenEjercicio({ exId }) {
       </div>
     );
   }
-  const ex = findExercise(it.id);
+  const ex = findExercise(it.id) || { id: it.id, es: it.id, en: '', group: '', equipment: '', level: '', img: null, primary: [], secondary: [], errors: [], tip: '' };
   const setsDone = useStore((s) => s.workout[day.id]?.[it.id]?.setsDone || 0);
   const idx = exs.findIndex((e) => e.id === exId);
   const prev = exs[idx - 1];

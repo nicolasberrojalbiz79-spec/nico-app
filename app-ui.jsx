@@ -368,11 +368,14 @@ function BarChart({ data, color = T.accent, height = 90 }) {
 }
 
 // Small image that fades in and falls back to an initials tile on error.
-function ExImg({ ex, style, cover = true, alt }) {
+// `expand` (default true) makes the image open the global lightbox on tap.
+function ExImg({ ex, style, cover = true, alt, expand = true }) {
   const c = groupColor(ex.group);
   const initials = ex.es.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase();
   const [err, setErr] = React.useState(false);
   const [loaded, setLoaded] = React.useState(false);
+  const canExpand = expand && ex.img && !err;
+  const onClick = canExpand ? (e) => { e.stopPropagation(); openLightbox(ex); } : undefined;
   if (err || !ex.img) {
     return (
       <div style={{
@@ -384,7 +387,7 @@ function ExImg({ ex, style, cover = true, alt }) {
     );
   }
   return (
-    <div style={{ ...style, position: 'relative', overflow: 'hidden', background: T.surface2 }}>
+    <div onClick={onClick} style={{ ...style, position: 'relative', overflow: 'hidden', background: T.surface2, cursor: canExpand ? 'zoom-in' : (style && style.cursor) }}>
       {!loaded && <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT, fontWeight: 900, color: c, opacity: 0.4 }}>{initials}</div>}
       <img src={ex.img} alt={alt || ex.es}
         onError={() => setErr(true)} onLoad={() => setLoaded(true)}

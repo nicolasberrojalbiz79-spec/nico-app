@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0A">
+<title>Guía de uso · Trainer Nico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0A0A;
+    --surface: #141414;
+    --surface2: #1A1A1A;
+    --border: #1F1F1F;
+    --border2: #2A2A2A;
+    --accent: #2EE6D5;
+    --accent-soft: rgba(46,230,213,0.12);
+    --accent-text: #6FF0E1;
+    --text: #FAFAFA;
+    --text-dim: #A8A8A8;
+    --text-muted: #6B6B6B;
+    --warn: #FFB020;
+    --red: #FF5247;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    color: var(--text);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; padding: 60px 24px 120px; }
+
+  .hero {
+    display: flex; align-items: center; gap: 16px;
+    padding: 36px 32px;
+    background: linear-gradient(135deg, var(--accent) 0%, #1FCBBC 100%);
+    color: #0A0A0A;
+    border-radius: 24px;
+    margin-bottom: 36px;
+    position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: ''; position: absolute; right: -40px; top: -40px;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(255,255,255,0.1);
+  }
+  .logo {
+    width: 56px; height: 56px; border-radius: 14px;
+    background: #0A0A0A; color: var(--accent);
+    font-weight: 900; font-size: 22px; letter-spacing: -1.5px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; position: relative; z-index: 1;
+  }
+  .hero h1 {
+    margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.8px;
+    position: relative; z-index: 1;
+  }
+  .hero p {
+    margin: 4px 0 0; opacity: 0.7; font-size: 14px;
+    position: relative; z-index: 1;
+  }
+
+  h2 {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.4px;
+    margin: 48px 0 12px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  h2 .num {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--accent); color: #0A0A0A;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px; font-weight: 700;
+  }
+  h3 {
+    font-size: 15px; font-weight: 700; margin: 24px 0 8px;
+    color: var(--text);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  h3.accent { color: var(--accent); }
+  p { color: var(--text-dim); margin: 8px 0; font-size: 15px; }
+  p strong { color: var(--text); font-weight: 600; }
+  code {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    padding: 2px 6px; border-radius: 4px; color: var(--accent-text);
+  }
+  ul { padding-left: 20px; color: var(--text-dim); font-size: 15px; }
+  ul li { margin: 6px 0; }
+  ul li strong { color: var(--text); }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 14px 0;
+  }
+  .card-accent {
+    background: var(--accent-soft);
+    border: 1px solid rgba(46,230,213,0.35);
+  }
+  .card-warn {
+    background: rgba(255,176,32,0.07);
+    border: 1px solid rgba(255,176,32,0.3);
+  }
+  .card-title {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 15px; margin-bottom: 8px;
+  }
+  .card-title .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; padding: 3px 8px; border-radius: 4px;
+    background: var(--accent); color: #0A0A0A;
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+  }
+  .card-title .badge.admin { background: #FFB020; }
+
+  .steps { counter-reset: step; padding-left: 0; list-style: none; }
+  .steps li {
+    counter-increment: step;
+    position: relative; padding: 8px 0 8px 40px;
+    color: var(--text-dim); font-size: 15px;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute; left: 0; top: 8px;
+    width: 26px; height: 26px; border-radius: 7px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+  }
+  .steps li strong { color: var(--text); }
+
+  .cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 22px; border-radius: 12px;
+    background: var(--accent); color: #0A0A0A;
+    text-decoration: none; font-weight: 700; font-size: 14px;
+    transition: transform .12s;
+  }
+  .cta:hover { transform: translateY(-1px); }
+
+  .grid-2 {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    margin: 14px 0;
+  }
+  @media (max-width: 640px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .hero { padding: 24px; }
+    .hero h1 { font-size: 22px; }
+    h2 { font-size: 19px; }
+    .wrap { padding: 32px 18px 80px; }
+  }
+
+  .toc {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 18px 22px; margin-bottom: 24px;
+  }
+  .toc .toc-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .toc ol {
+    margin: 0; padding-left: 18px;
+    font-size: 14px; color: var(--text-dim);
+  }
+  .toc ol li { margin: 5px 0; }
+  .toc a { color: var(--text-dim); text-decoration: none; }
+  .toc a:hover { color: var(--accent); }
+
+  .role-tag {
+    display: inline-block; font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; padding: 3px 8px; border-radius: 4px;
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+    margin-right: 8px; vertical-align: middle;
+  }
+  .role-tag.alumno { background: var(--accent); color: #0A0A0A; }
+  .role-tag.admin { background: #FFB020; color: #0A0A0A; }
+  .role-tag.todos { background: var(--surface2); color: var(--text-dim); border: 1px solid var(--border2); }
+
+  table {
+    width: 100%; border-collapse: collapse; margin: 14px 0;
+    font-size: 14px;
+  }
+  table th, table td {
+    text-align: left; padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  table th {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted); font-weight: 600;
+  }
+  table td { color: var(--text-dim); }
+  table td:first-child { color: var(--text); font-weight: 500; }
+
+  .footer {
+    margin-top: 60px; padding-top: 30px;
+    border-top: 1px solid var(--border);
+    text-align: center; color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  }
+
+  kbd {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    padding: 2px 8px; border-radius: 5px;
+    box-shadow: 0 2px 0 var(--border);
+    color: var(--accent-text);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="logo">TN</div>
+    <div>
+      <h1>Trainer Nico</h1>
+      <p>Guía de uso completa · v0.4</p>
+    </div>
+  </div>
+
+  <p>Esta app tiene <strong>dos vistas</strong>: la de Nico (entrenador) para gestionar alumnos y rutinas, y la de cada alumno para entrenar y registrar progreso. Todo lo que se modifica se guarda automáticamente en el dispositivo.</p>
+
+  <a href="Trainer Nico.html" class="cta">Abrir la app →</a>
+
+  <div class="toc">
+    <div class="toc-title">En esta guía</div>
+    <ol>
+      <li><a href="#empezar">Empezar a usarla</a></li>
+      <li><a href="#alumno">Vista del Alumno · entrenamiento diario</a></li>
+      <li><a href="#admin">Vista del Entrenador · panel de gestión</a></li>
+      <li><a href="#movil">Uso en celular vs PC</a></li>
+      <li><a href="#datos">Datos, persistencia y privacidad</a></li>
+      <li><a href="#faq">Preguntas frecuentes</a></li>
+    </ol>
+  </div>
+
+  <!-- ───────────────────────────────────────────────────────────── -->
+  <h2 id="empezar"><span class="num">1</span> Empezar a usarla</h2>
+
+  <p>Abrí <code>Trainer Nico.html</code> en cualquier navegador moderno (Chrome, Safari, Firefox, Edge). No hace falta instalar nada.</p>
+
+  <h3>Iniciar sesión</h3>
+
+  <ol class="steps">
+    <li>Al entrar verás la pantalla de <strong>login</strong>. Tiene un switch arriba: <em>Soy alumno</em> / <em>Soy entrenador</em>.</li>
+    <li>Hay dos botones de acceso rápido al final: <strong>Lucía</strong> (alumno demo) o <strong>Nico</strong> (entrenador demo). Tocá uno y se llenan automáticamente los campos.</li>
+    <li>Tocá <strong>Entrar</strong>. Caés directo en tu pantalla principal según el rol.</li>
+  </ol>
+
+  <div class="card card-accent">
+    <div class="card-title">💡 Para tus alumnos reales</div>
+    <p style="margin: 0; color: var(--text);">El login es de demostración: cualquier email + contraseña entra. En la versión productiva, vas a conectar Supabase Auth y cada alumno tendrá su cuenta real con su propia data aislada.</p>
+  </div>
+
+  <h3>Cerrar sesión</h3>
+  <ul>
+    <li><strong>Desktop:</strong> abajo a la izquierda en el sidebar hay un ícono de salida (⤴) junto a tu nombre.</li>
+    <li><strong>Mobile alumno:</strong> entrá a <em>Perfil</em> (última tab) y abajo del todo está <em>Cerrar sesión</em>.</li>
+    <li><strong>Mobile admin:</strong> abrí el menú lateral con el ícono de tres líneas y tocá salida abajo a la izquierda.</li>
+  </ul>
+
+  <!-- ───────────────────────────────────────────────────────────── -->
+  <h2 id="alumno"><span class="num">2</span> <span class="role-tag alumno">Alumno</span> Vista del Alumno</h2>
+
+  <p>Pensada para que tu alumno la abra en el celular antes y durante el entrenamiento. Tiene 5 pantallas accesibles desde la barra inferior.</p>
+
+  <h3 class="accent">Hoy</h3>
+  <p>Pantalla principal: muestra el entrenamiento del día con un botón gigante <strong>Comenzar entrenamiento</strong>. Mostrá:</p>
+  <ul>
+    <li>El <strong>anillo de adherencia</strong> en el header turquesa: se llena a medida que completa series.</li>
+    <li>La <strong>tira de la semana</strong> con cada día (L M X J V S D). El día actual está iluminado.</li>
+    <li><strong>Peso corporal y volumen semanal.</strong> Tocando "Peso corporal" se va a Perfil para actualizar el valor.</li>
+    <li>Una <strong>nota de Nico</strong> destacando algo importante para hoy.</li>
+  </ul>
+
+  <h3 class="accent">Rutina (en curso)</h3>
+  <p>Lista de ejercicios del día. Para cada uno:</p>
+  <ul>
+    <li>Tocá el chip de cada serie (1, 2, 3, 4) para marcarla como completada. <strong>Vuelve a tocar el último marcado para deshacer.</strong></li>
+    <li>El ejercicio activo (el primero que no está al 100%) tiene un halo turquesa.</li>
+    <li>Tocá la tarjeta del ejercicio para abrir su detalle con técnica, video y tips.</li>
+    <li>Arriba a la derecha hay un botón <strong>Reset</strong> que reinicia las series del día (útil para empezar de cero).</li>
+  </ul>
+
+  <h3 class="accent">Detalle de ejercicio</h3>
+  <p>Muestra todo lo necesario para ejecutar bien el ejercicio:</p>
+  <ul>
+    <li><strong>Imagen + botón play</strong> para abrir un video de referencia.</li>
+    <li><strong>Registro de series</strong> con reps, kg, RPE. Las completadas tienen check turquesa.</li>
+    <li><strong>Músculos trabajados</strong>: los primarios resaltados en turquesa.</li>
+    <li><strong>Tip de Nico</strong> destacado en un bloque turquesa.</li>
+    <li><strong>Errores comunes</strong> a evitar.</li>
+    <li>Botón flotante abajo: <strong>"Completar serie X →"</strong>. Tocalo y el contador avanza.</li>
+    <li>Botones <strong>Anterior / Siguiente</strong> para navegar entre ejercicios del día sin volver atrás.</li>
+  </ul>
+
+  <h3 class="accent">Progreso</h3>
+  <p>Gráficos de evolución de 8 semanas. Tres pestañas:</p>
+  <ul>
+    <li><strong>Peso</strong> — gráfico de área con tu peso corporal semana a semana.</li>
+    <li><strong>Volumen</strong> — toneladas totales movidas por semana.</li>
+    <li><strong>Adherencia</strong> — barras de % de cumplimiento.</li>
+  </ul>
+  <p>Abajo: tus <strong>Récords personales</strong> recientes.</p>
+
+  <h3 class="accent">Nutrición</h3>
+  <p>Tu plan de comidas del día. El anillo grande muestra <strong>kcal restantes</strong>.</p>
+  <ul>
+    <li><strong>Tocá una comida para marcarla como hecha.</strong> Las barras de macros (proteína, carbos, grasas) se recalculan al instante.</li>
+    <li>Cada comida muestra ingredientes específicos con gramaje.</li>
+    <li>Botón <strong>+ Comida</strong> arriba para registrar algo extra (próximamente).</li>
+  </ul>
+
+  <h3 class="accent">Perfil</h3>
+  <ul>
+    <li><strong>Mi peso actual</strong>: tarjeta destacada. Tocala, abrí el modal, ingresá tu peso y guardá. Se sincroniza al instante con Hoy y queda guardado.</li>
+    <li>Tu rutina y plan nutricional asignados (los gestiona Nico).</li>
+    <li>Cerrar sesión.</li>
+  </ul>
+
+  <!-- ───────────────────────────────────────────────────────────── -->
+  <h2 id="admin"><span class="num">3</span> <span class="role-tag admin">Trainer</span> Panel del Entrenador</h2>
+
+  <p>Ingresá como <strong>Nico</strong> para acceder al panel. Tiene 6 secciones en la barra lateral izquierda (o el menú lateral en mobile).</p>
+
+  <h3 class="accent">Dashboard</h3>
+  <p>Vista general de toda tu operación:</p>
+  <ul>
+    <li><strong>4 métricas</strong> arriba: alumnos activos, check-ins de hoy, adherencia media, PRs de la semana. Cada una con su mini-gráfico de tendencia.</li>
+    <li><strong>Actividad reciente</strong>: feed en vivo de qué hicieron tus alumnos. Tocá una fila para ir a su perfil.</li>
+    <li><strong>Avance destacado</strong>: tarjeta turquesa con un highlight de la semana.</li>
+    <li><strong>Necesitan atención</strong>: alumnos con adherencia &lt; 75%. Tocá <em>Ver</em> para ir a su detalle.</li>
+  </ul>
+
+  <h3 class="accent">Alumnos</h3>
+  <p>Lista de los 8 alumnos con filtros (Todos, Hipertrofia, Pérdida grasa, Fuerza, Inactivos).</p>
+  <ul>
+    <li>En desktop: tabla con avatar, objetivo, nivel, adherencia (barra de color), último check-in.</li>
+    <li>En mobile: cards verticales para navegar fácil.</li>
+    <li>Tocá cualquier fila para abrir el <strong>perfil del alumno</strong>.</li>
+  </ul>
+
+  <h3 class="accent">Detalle del alumno</h3>
+  <ul>
+    <li>Hero con foto, datos, objetivo y stats clave (peso + adherencia).</li>
+    <li><strong>Rutina actual</strong>: vista resumida de cada día con sus ejercicios.</li>
+    <li><strong>Notas privadas</strong>: tocá <em>Editar</em>, escribí lo que necesites, <em>Guardar</em>. Solo vos la ves.</li>
+    <li><strong>Gráfico de peso</strong> de las últimas 8 semanas.</li>
+    <li><strong>Quick actions</strong>: shortcuts a editar rutina, asignar plan nutricional, ver progreso completo.</li>
+    <li>En el header: botón <em>Mensaje</em> y <em>Editar rutina</em>.</li>
+  </ul>
+
+  <h3 class="accent">Rutinas (Biblioteca)</h3>
+  <p>Una <strong>biblioteca de 43 rutinas ya armadas</strong> para empezar a trabajar hoy mismo, repartidas en tres niveles: <strong>12 principiante · 15 intermedio · 16 avanzado</strong> (Full Body, Push Pull Legs, Upper/Lower, Bro Split, Powerlifting, foco glúteo, en casa, definición y más).</p>
+  <ul>
+    <li><strong>Filtrá</strong> por nivel y por objetivo (hipertrofia, fuerza, pérdida de grasa, recomposición, salud general).</li>
+    <li><strong>Ver detalle</strong>: abre la rutina completa día por día con cada ejercicio, series y reps.</li>
+    <li><strong>Asignar</strong>: elegí un alumno y la rutina queda vinculada a su cuenta al instante.</li>
+    <li>Todas usan tus ejercicios reales — sin inventos. Cada ejercicio enlaza a su infografía.</li>
+  </ul>
+
+  <h3 class="accent">Rutinas (Constructor)</h3>
+  <p>Editor visual de rutinas semanales:</p>
+  <ol class="steps">
+    <li>Elegí un <strong>día</strong> en la barra lateral izquierda (en desktop) o en el carrousel superior (mobile).</li>
+    <li>Vas a ver los <strong>ejercicios del día</strong> con sus series/reps/descanso/carga.</li>
+    <li>Tocá el ícono de <strong>basurero</strong> al final de cualquier ejercicio para sacarlo (con confirmación).</li>
+    <li>Tocá <strong>+ Añadir ejercicio del catálogo</strong> para abrir el panel lateral con todo el catálogo filtrable.</li>
+    <li>En el panel lateral derecho (desktop) o el sheet inferior (mobile): tocá el <strong>+</strong> de cualquier ejercicio para sumarlo al día.</li>
+    <li>Cuando termines, <strong>Guardar plantilla</strong> o <strong>Asignar</strong>.</li>
+  </ol>
+  <div class="card card-warn">
+    <div class="card-title">⚠ Sobre los cambios</div>
+    <p style="margin: 0; color: var(--text);">Los cambios al día <strong>se reflejan al instante en la app del alumno</strong>. Si removés un ejercicio del día, el alumno ya no lo verá en Hoy ni en Rutina.</p>
+  </div>
+
+  <h3 class="accent">Catálogo de ejercicios</h3>
+  <p>Los <strong>94 ejercicios reales de tu biblioteca</strong>, cada uno con su <strong>infografía completa</strong> (posición inicial/final, pasos, tips clave y errores comunes). Cuando el alumno toca un ejercicio, ve tu ficha real y puede abrirla en pantalla completa con "Ver cómo se hace".</p>
+  <ul>
+    <li><strong>Buscador</strong>: escribí parte del nombre en español o inglés.</li>
+    <li><strong>3 filtros</strong> combinables: Grupo, Nivel, Equipamiento. Aplican en tiempo real.</li>
+    <li>Tocá un ejercicio para <strong>seleccionarlo</strong> (queda con borde turquesa y check). Podés seleccionar varios.</li>
+    <li>Con uno o más seleccionados aparece el botón <strong>Añadir a rutina</strong>.</li>
+    <li>Tocá <strong>Limpiar</strong> al lado de los filtros para resetearlos rápido.</li>
+  </ul>
+
+  <h3 class="accent">Nutrición</h3>
+  <p>Biblioteca de planes nutricionales asignables. Cada plan tiene calorías, macros, y cantidad de alumnos a los que se asignó.</p>
+  <ul>
+    <li>Tocá <strong>Editar</strong> para modificar un plan.</li>
+    <li>Tocá <strong>Asignar</strong> para asignarlo al alumno actual.</li>
+  </ul>
+
+  <h3 class="accent">Mensajes</h3>
+  <p>Centro de mensajes con tus alumnos. Cada fila muestra el último mensaje, hora y badge con cantidad sin leer. Tocá una fila para abrir la conversación (te lleva al perfil del alumno por ahora).</p>
+
+  <!-- ───────────────────────────────────────────────────────────── -->
+  <h2 id="movil"><span class="num">4</span> Uso en celular vs PC</h2>
+
+  <p>La app está pensada <strong>mobile-first</strong> para que cada alumno entrene con el celu en la mano. Pero en PC también se ve bien.</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="badge">📱 Mobile &lt; 900px</span></div>
+      <ul style="margin: 0;">
+        <li>Alumno: barra inferior con 5 tabs</li>
+        <li>Admin: menú hamburguesa arriba a la izquierda</li>
+        <li>Cards apiladas verticales</li>
+        <li>Catálogo: 2 columnas</li>
+        <li>Builder: carrousel de días arriba</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="badge admin">🖥 Desktop ≥ 900px</span></div>
+      <ul style="margin: 0;">
+        <li>Sidebar fija a la izquierda (todos los roles)</li>
+        <li>Admin: tablas con todas las columnas</li>
+        <li>Catálogo: 4 columnas de cards</li>
+        <li>Builder: 3 paneles (días · ejercicios · catálogo)</li>
+        <li>Vista alumno centrada con ancho máximo</li>
+      </ul>
+    </div>
+  </div>
+
+  <p>El cambio entre layouts es <strong>automático y en vivo</strong>: redimensioná la ventana y todo se adapta.</p>
+
+  <!-- ───────────────────────────────────────────────────────────── -->
+  <h2 id="datos"><span class="num">5</span> Datos, persistencia y privacidad</h2>
+
+  <h3>Qué se guarda</h3>
+  <p>Todo lo que modificás se guarda automáticamente en el <strong>localStorage del navegador</strong> bajo la clave <code>tn-store-v2</code>:</p>
+  <ul>
+    <li>Tu rol activo (alumno o admin)</li>
+    <li>Series completadas por día/ejercicio</li>
+    <li>Comidas marcadas como hechas</li>
+    <li>Tu peso corporal actual</li>
+    <li>Notas privadas que escribiste sobre cada alumno</li>
+    <li>Ediciones de rutinas (añadir/quitar ejercicios)</li>
+    <li>Filtros activos del catálogo</li>
+  </ul>
+
+  <h3>Cómo resetear</h3>
+  <p>Si querés volver al estado inicial:</p>
+  <ul>
+    <li><strong>Opción suave:</strong> cerrar sesión (deja la data pero te saca).</li>
+    <li><strong>Opción dura:</strong> en la consola del navegador, <code>localStorage.clear()</code> y recargá. Borra todo, también el rol.</li>
+  </ul>
+
+  <h3>Cuándo migrar a producción</h3>
+  <p>Para que la app sea usable por todos tus alumnos a la vez, con su data privada y sincronizada, hay que conectar un backend. La estructura ya está pensada para Supabase: el plan original incluye tablas <code>users, alumnos, ejercicios, rutinas, rutina_ejercicios, progresos, planes_nutricion, comidas</code>, autenticación con roles, y storage para imágenes. Hablamos cuando quieras dar el paso.</p>
+
+  <!-- ───────────────────────────────────────────────────────────── -->
+  <h2 id="faq"><span class="num">6</span> Preguntas frecuentes</h2>
+
+  <h3>¿Cuántos alumnos puede manejar la versión actual?</h3>
+  <p>La demo tiene 8 alumnos precargados. Para alta de alumnos reales necesitás el backend (Supabase). Mientras tanto podés mostrarles cómo va a verse usando la cuenta de Lucía como ejemplo.</p>
+
+  <h3>¿Cómo agrego un ejercicio nuevo al catálogo?</h3>
+  <p>En la versión productiva: panel Catálogo → <em>Nuevo ejercicio</em>. Actualmente ese botón muestra "Próximamente" porque la creación de ejercicios requiere subir imágenes y videos al storage.</p>
+
+  <h3>¿Cómo asigno una rutina específica a un alumno?</h3>
+  <p>Desde el perfil del alumno → <em>Editar rutina</em>. Te lleva al constructor. Editás los días y tocás <em>Asignar</em>. En la demo se asigna a Lucía por defecto.</p>
+
+  <h3>¿Los alumnos ven las notas privadas?</h3>
+  <p>No. Las notas en el detalle del alumno son <strong>solo tuyas</strong>. Quedan etiquetadas como "Notas privadas".</p>
+
+  <h3>¿Funciona offline?</h3>
+  <p>Una vez cargada, sí. El HTML, fuentes y librerías se cachean en el navegador. La data persiste local. Para sincronizar entre dispositivos necesitás backend.</p>
+
+  <h3>¿Puedo personalizar los colores?</h3>
+  <p>Sí. El acento turquesa <code>#2EE6D5</code> está definido en <code>app-data.jsx</code> en el objeto <code>T.accent</code>. Cambialo ahí y se actualiza en toda la app.</p>
+
+  <h3>¿En qué dispositivos funciona?</h3>
+  <ul>
+    <li>iPhone (iOS 14+): perfecto en Safari y Chrome</li>
+    <li>Android (Chrome 90+): perfecto</li>
+    <li>iPad: usa el layout desktop</li>
+    <li>Mac/Windows: cualquier navegador moderno</li>
+  </ul>
+
+  <div class="footer">
+    Trainer Nico · Guía v1.0 · Mayo 2026<br>
+    <a href="Trainer Nico.html" style="color: var(--accent); text-decoration: none;">→ Abrir app</a>
+  </div>
+</div>
+</body>
+</html>

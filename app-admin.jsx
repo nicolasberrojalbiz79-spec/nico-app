@@ -1043,7 +1043,19 @@ function ShareAccessModal({ open, onClose, student }) {
   };
   const msg = cred ? `¡Hola ${student.name}! 💪 Ya tenés tu acceso a Trainer Nico.\n\n🔗 App: ${appUrl}\n\nIngresá con:\n📧 Email: ${cred.email}\n🔑 Contraseña: ${cred.password}\n\nElegí "Soy alumno" para entrar. ¡Nos vemos en el entrenamiento!` : '';
   const copy = () => { navigator.clipboard?.writeText(msg).then(() => toast('Copiado al portapapeles', { kind: 'success' })).catch(() => toast('No se pudo copiar', { kind: 'error' })); };
-  const wa = () => window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  const wa = () => {
+    const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
+    // window.open suele estar bloqueado dentro de iframes/apps embebidas.
+    // Un click sobre un <a target="_blank"> es mucho más permisivo.
+    try {
+      const a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      document.body.appendChild(a); a.click(); a.remove();
+    } catch (e) {
+      const win = window.open(url, '_blank');
+      if (!win) { copy(); toast('Abrí WhatsApp y pegá el mensaje (ya lo copiamos)', {}); }
+    }
+  };
   const row = (label, value) => (
     <div style={{ background: T.surface2, border: `1px solid ${T.border2}`, borderRadius: 9, padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
       <div style={{ minWidth: 0 }}>
