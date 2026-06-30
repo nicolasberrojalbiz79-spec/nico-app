@@ -162,6 +162,53 @@ function NewStudentModal({ open, onClose }) {
 // ─────────────────────────────────────────────────────────────
 // DASHBOARD
 // ─────────────────────────────────────────────────────────────
+function DestacadoRotativo() {
+  useDataVersion();
+  // Mezcla de avances reales (alumnos con buena adherencia / inventados de ejemplo).
+  const items = React.useMemo(() => {
+    const reales = (STUDENTS || []).filter((s) => s.adherence >= 80).slice(0, 4).map((s) => ({
+      title: `${s.name} viene cumpliendo al ${s.adherence}%`,
+      sub: `${s.goal} · ${s.level}`, sid: s.id,
+    }));
+    const inventados = [
+      { title: 'Tomás batió su PR de sentadilla esta mañana', sub: '170 kg × 3 · nueva marca personal' },
+      { title: 'Lucía bajó 1.4 kg manteniendo fuerza', sub: 'Recomposición en marcha 💪' },
+      { title: 'Mateo completó 4 semanas seguidas sin faltar', sub: 'Adherencia 100% este mes' },
+      { title: 'Sofía sumó 5 kg al peso muerto', sub: 'Progresión constante en tracción' },
+      { title: 'Camila logró su primera dominada estricta', sub: 'Objetivo cumplido 🎯' },
+      { title: 'Diego sostiene déficit hace 6 semanas', sub: '-2.1 kg y subiendo en press banca' },
+    ];
+    return [...reales, ...inventados];
+  }, []);
+  const [i, setI] = React.useState(0);
+  React.useEffect(() => {
+    if (items.length <= 1) return;
+    const t = setInterval(() => setI((x) => (x + 1) % items.length), 40000);
+    return () => clearInterval(t);
+  }, [items.length]);
+  const cur = items[i % items.length] || { title: 'Sumá tu primer alumno para ver avances', sub: '' };
+  return (
+    <div style={{ background: T.accent, color: '#0A0A0A', borderRadius: 16, padding: 18, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontFamily: MONO, fontSize: 10, textTransform: 'uppercase', letterSpacing: 1, opacity: 0.65 }}>Avance destacado</div>
+        <div style={{ display: 'flex', gap: 4 }}>
+          {items.slice(0, 8).map((_, k) => (
+            <div key={k} style={{ width: 5, height: 5, borderRadius: 3, background: '#0A0A0A', opacity: k === (i % items.length) ? 0.85 : 0.25 }} />
+          ))}
+        </div>
+      </div>
+      <div key={i} style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, marginTop: 8, lineHeight: 1.3, animation: 'tn-fade-in .4s ease' }}>{cur.title}</div>
+      {cur.sub ? <div style={{ fontFamily: MONO, fontSize: 11, marginTop: 6, opacity: 0.7 }}>{cur.sub}</div> : null}
+      {cur.sid ? (
+        <button onClick={() => navigate(`#/admin/alumnos/${cur.sid}`)} style={{
+          background: '#0A0A0A', color: T.accent, border: 'none', borderRadius: 8,
+          padding: '8px 14px', marginTop: 14, cursor: 'pointer', fontFamily: FONT, fontWeight: 600, fontSize: 12,
+        }}>Ver alumno →</button>
+      ) : null}
+    </div>
+  );
+}
+
 function AdminDashboard() {
   const { isMobile, isNarrow } = useViewport();
   const [newOpen, setNewOpen] = React.useState(false);
@@ -242,19 +289,7 @@ function AdminDashboard() {
 
           {/* Side panel */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{
-              background: T.accent, color: '#0A0A0A',
-              borderRadius: 16, padding: 18,
-            }}>
-              <div style={{ fontFamily: MONO, fontSize: 10, textTransform: 'uppercase', letterSpacing: 1, opacity: 0.65 }}>Avance destacado</div>
-              <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, marginTop: 6, lineHeight: 1.3 }}>Tomás batió su PR de sentadilla esta mañana.</div>
-              <div style={{ fontFamily: MONO, fontSize: 11, marginTop: 6, opacity: 0.7 }}>170kg × 3 · S6 · semana de descarga</div>
-              <button onClick={() => navigate('#/admin/alumnos/4')} style={{
-                background: '#0A0A0A', color: T.accent, border: 'none', borderRadius: 8,
-                padding: '8px 14px', marginTop: 14, cursor: 'pointer',
-                fontFamily: FONT, fontWeight: 600, fontSize: 12,
-              }}>Ver gráfico →</button>
-            </div>
+            <DestacadoRotativo />
 
             <Card>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
@@ -409,6 +444,7 @@ function AdminAlumnoDetail({ id }) {
   // Resolve the student's actual assigned routine (honoring admin overrides).
   const ov = useStore((st) => st.studentOverrides[s ? s.id : 0]);
   const stuRoutine = s ? resolveRoutine((ov && ov.routineId) || s.routineId) : null;
+  const [shareOpen, setShareOpen] = React.useState(false);
   if (!s) {
     return (
       <div style={{ padding: 40, textAlign: 'center' }}>
@@ -422,10 +458,12 @@ function AdminAlumnoDetail({ id }) {
       <AdminBar title={s.name} subtitle={`${s.goal} · ${s.level} · ${s.age} años`}
         onBack={() => navigate('#/admin/alumnos')}
         actions={<>
-          {!isMobile && <Btn icon={Icon.chat()} onClick={() => navigate('#/admin/mensajes')}>Mensaje</Btn>}
+          {!isMobile && <Btn icon={Icon.chat()} onClick={() => setShareOpen(true)}>Compartir acceso</Btn>}
+          {isMobile && <Btn sm onClick={() => setShareOpen(true)}>Acceso</Btn>}
           <Btn primary onClick={() => navigate('#/admin/rutinas')}>Editar rutina</Btn>
         </>}
       />
+      <ShareAccessModal open={shareOpen} onClose={() => setShareOpen(false)} student={s} />
       <div style={{ padding: isMobile ? 16 : 24 }}>
         {/* hero */}
         <div style={{
@@ -990,23 +1028,99 @@ function CatalogCard({ ex, selected, onToggle }) {
 // ─────────────────────────────────────────────────────────────
 // BIBLIOTECA DE RUTINAS (40+ precargadas)
 // ─────────────────────────────────────────────────────────────
+// Modal: crea/regenera el acceso del alumno y muestra link + credenciales.
+function ShareAccessModal({ open, onClose, student }) {
+  const [busy, setBusy] = React.useState(false);
+  const [cred, setCred] = React.useState(null); // { email, password }
+  React.useEffect(() => { if (open) { setCred(null); setBusy(false); } }, [open]);
+  const appUrl = window.location.origin + window.location.pathname;
+  const generate = async () => {
+    if (!student.email) { toast('Este alumno no tiene email. Editá su ficha y agregalo.', { kind: 'error' }); return; }
+    setBusy(true);
+    try { const r = await tnCreateAccessDB(student.id); setCred(r); toast('Acceso creado ✓', { kind: 'success' }); }
+    catch (e) { toast(e.message || 'Error', { kind: 'error' }); }
+    setBusy(false);
+  };
+  const msg = cred ? `¡Hola ${student.name}! 💪 Ya tenés tu acceso a Trainer Nico.\n\n🔗 App: ${appUrl}\n\nIngresá con:\n📧 Email: ${cred.email}\n🔑 Contraseña: ${cred.password}\n\nElegí "Soy alumno" para entrar. ¡Nos vemos en el entrenamiento!` : '';
+  const copy = () => { navigator.clipboard?.writeText(msg).then(() => toast('Copiado al portapapeles', { kind: 'success' })).catch(() => toast('No se pudo copiar', { kind: 'error' })); };
+  const wa = () => window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  const row = (label, value) => (
+    <div style={{ background: T.surface2, border: `1px solid ${T.border2}`, borderRadius: 9, padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+      <div style={{ minWidth: 0 }}>
+        <div style={{ fontFamily: MONO, fontSize: 9, color: T.textMuted, textTransform: 'uppercase', letterSpacing: 1 }}>{label}</div>
+        <div style={{ fontFamily: MONO, fontSize: 14, fontWeight: 600, color: T.text, wordBreak: 'break-all' }}>{value}</div>
+      </div>
+      <button onClick={() => { navigator.clipboard?.writeText(value); toast('Copiado', { kind: 'success' }); }} style={{ background: T.surface, border: `1px solid ${T.border2}`, color: T.accent, borderRadius: 7, padding: '6px 10px', cursor: 'pointer', fontFamily: FONT, fontSize: 11, fontWeight: 600, flexShrink: 0 }}>Copiar</button>
+    </div>
+  );
+  return (
+    <Modal open={open} onClose={onClose} title={`Acceso de ${student ? student.name : ''}`} width={460}
+      actions={cred ? <>
+        <Btn onClick={copy} icon={Icon.copy ? Icon.copy() : null}>Copiar mensaje</Btn>
+        <Btn primary onClick={wa}>Enviar por WhatsApp</Btn>
+      </> : <>
+        <Btn onClick={onClose}>Cancelar</Btn>
+        <Btn primary disabled={busy} onClick={generate}>{busy ? 'Creando…' : 'Crear acceso'}</Btn>
+      </>}>
+      {!cred ? (
+        <div style={{ fontFamily: FONT, fontSize: 14, color: T.textDim, lineHeight: 1.6 }}>
+          Se va a crear (o regenerar) la cuenta de <strong style={{ color: T.text }}>{student && student.name}</strong> con una contraseña nueva.
+          {student && student.email
+            ? <> El email registrado es <strong style={{ color: T.accentText }}>{student.email}</strong>.</>
+            : <div style={{ color: T.warn, marginTop: 10 }}>⚠ Este alumno no tiene email cargado. Editá su ficha y agregá uno antes de generar el acceso.</div>}
+          <div style={{ marginTop: 12, fontFamily: MONO, fontSize: 12, color: T.textMuted }}>Después vas a poder enviarle el link + datos por WhatsApp.</div>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ fontFamily: FONT, fontSize: 13, color: T.accentText, marginBottom: 2 }}>✓ Acceso listo. Enviale estos datos:</div>
+          {row('Link de la app', appUrl)}
+          {row('Email', cred.email)}
+          {row('Contraseña', cred.password)}
+          <div style={{ fontFamily: FONT, fontSize: 12, color: T.textMuted, lineHeight: 1.5, marginTop: 4 }}>Tiene que entrar eligiendo <strong>“Soy alumno”</strong>. Guardá la contraseña: por seguridad no se vuelve a mostrar (podés regenerarla cuando quieras).</div>
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────
+// BIBLIOTECA DE RUTINAS (50+ precargadas)
+// ─────────────────────────────────────────────────────────────
 function levelColor(lv) { return lv === 'Principiante' ? T.accent : lv === 'Intermedio' ? T.warn : T.red; }
 
 function AdminBiblioteca() {
   const { isMobile } = useViewport();
+  useDataVersion();
   const [level, setLevel] = React.useState('Todos');
   const [goal, setGoal] = React.useState('Todos');
   const [detail, setDetail] = React.useState(null); // routine obj
   const [assign, setAssign] = React.useState(null);  // routine obj being assigned
+  const [busy, setBusy] = React.useState(false);
 
-  const goals = ['Todos', ...Array.from(new Set(ROUTINES.map((r) => r.goal)))];
-  const filtered = ROUTINES.filter((r) =>
+  // Plantillas precargadas (≥50) + las rutinas propias guardadas en la base.
+  const TPL = (typeof ROUTINE_TEMPLATES !== 'undefined' ? ROUTINE_TEMPLATES : []).map((r) => ({ ...r, _tpl: true }));
+  const LIB = [...ROUTINES, ...TPL];
+  const goals = ['Todos', ...Array.from(new Set(LIB.map((r) => r.goal)))];
+  const filtered = LIB.filter((r) =>
     (level === 'Todos' || r.level === level) &&
     (goal === 'Todos' || r.goal === goal));
 
+  // Asignar: si es plantilla, primero la clonamos a la base del entrenador.
+  const doAssign = async (routine, student) => {
+    setBusy(true);
+    try {
+      let rid = routine.id;
+      if (routine._tpl) rid = await tnCloneTemplateDB(routine);
+      await tnAssignRoutineDB(student.id, rid);
+      toast(`"${routine.name}" asignada a ${student.name}`, { kind: 'success' });
+      setAssign(null);
+    } catch (e) { toast(e.message || 'Error', { kind: 'error' }); }
+    setBusy(false);
+  };
+
   return (
     <div>
-      <AdminBar title="Biblioteca de rutinas" subtitle={`${filtered.length} de ${ROUTINES.length} plantillas`}
+      <AdminBar title="Biblioteca de rutinas" subtitle={`${filtered.length} rutinas · ${TPL.length} plantillas + ${ROUTINES.length} propias`}
         actions={<Btn primary icon={Icon.plus('#0A0A0A')} onClick={() => navigate('#/admin/rutinas')}>Crear rutina</Btn>} />
 
       {/* Filters */}
@@ -1089,7 +1203,10 @@ function AdminBiblioteca() {
                     return (
                       <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderTop: i ? `1px solid ${T.border}` : 'none' }}>
                         {ex && <ExerciseTile ex={ex} compact />}
-                        <div style={{ flex: 1, minWidth: 0, fontFamily: FONT, fontSize: 13, color: T.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ex ? ex.es : e.id}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontFamily: FONT, fontSize: 13, color: T.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ex ? ex.es : e.id}</div>
+                          {e.technique ? <div style={{ fontFamily: MONO, fontSize: 9, color: T.accentText, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>⚡ {e.technique}</div> : null}
+                        </div>
                         <div style={{ fontFamily: MONO, fontSize: 11, color: T.textDim, flexShrink: 0 }}>{e.sets}×{e.reps}</div>
                       </div>
                     );
@@ -1107,13 +1224,10 @@ function AdminBiblioteca() {
         {assign && (
           <div>
             <div style={{ fontFamily: FONT, fontSize: 13, color: T.textDim, marginBottom: 14 }}>Elegí a qué alumno asignarle esta rutina:</div>
+            {STUDENTS.length === 0 && <div style={{ fontFamily: FONT, fontSize: 13, color: T.textMuted }}>Toldavía no tenés alumnos. Creá uno primero en “Alumnos”.</div>}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {STUDENTS.map((s) => (
-                <button key={s.id} onClick={async () => {
-                  try { await tnAssignRoutineDB(s.id, assign.id); toast(`"${assign.name}" asignada a ${s.name}`, { kind: 'success' }); }
-                  catch (e) { toast(e.message || 'Error', { kind: 'error' }); }
-                  setAssign(null);
-                }} style={{
+                <button key={s.id} disabled={busy} onClick={() => doAssign(assign, s)} style={{
                   display: 'flex', alignItems: 'center', gap: 12, padding: 10, width: '100%', textAlign: 'left',
                   background: T.surface, border: `1px solid ${T.border2}`, borderRadius: 10, cursor: 'pointer',
                 }}>

@@ -589,46 +589,37 @@ function MiniMacro({ label, value, color }) {
 
 function AdminMensajes() {
   const { isMobile } = useViewport();
-  const msgs = [
-    { sid: 1, last: '¿Sustituyo el remo con barra por jalón?', time: '07:14', unread: 2 },
-    { sid: 4, last: 'PR! 170×3 finalmente 🎯',                  time: 'Ayer',  unread: 0 },
-    { sid: 2, last: 'Sumé peso al pie, no tira',                time: 'Ayer',  unread: 1 },
-    { sid: 3, last: 'Gracias por el plan de la semana',         time: '2d',    unread: 0 },
-  ];
+  useDataVersion();
   return (
     <div>
-      <AdminBar title="Mensajes" subtitle={`${msgs.filter((m) => m.unread).length} sin leer`}
-        actions={<Btn primary icon={Icon.plus('#0A0A0A')} onClick={() => toast('Próximamente: nuevo mensaje')}>Nuevo</Btn>}
+      <AdminBar title="Mensajes" subtitle="Centro de mensajes"
+        actions={<Btn primary icon={Icon.plus('#0A0A0A')} onClick={() => toast('Próximamente: chat directo con tus alumnos')}>Nuevo</Btn>}
       />
       <div style={{ padding: isMobile ? 12 : 24 }}>
-        <Card padding={0}>
-          {msgs.map((m, i) => {
-            const s = findStudent(m.sid);
-            return (
-              <div key={m.sid} onClick={() => navigate(`#/admin/alumnos/${m.sid}`)} style={{
+        {STUDENTS.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '70px 24px', color: T.textDim }}>
+            <div style={{ width: 60, height: 60, borderRadius: 15, background: T.surface, border: `1px solid ${T.border2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>{Icon.chat(T.accent)}</div>
+            <div style={{ fontFamily: FONT, fontSize: 17, fontWeight: 700, color: T.text, marginBottom: 6 }}>Sin conversaciones</div>
+            <div style={{ fontFamily: FONT, fontSize: 14, lineHeight: 1.5, maxWidth: 380, margin: '0 auto' }}>Cuando tengas alumnos, vas a poder escribirles desde acá. Creá tu primer alumno en la sección “Alumnos”.</div>
+            <div style={{ marginTop: 18 }}><Btn primary onClick={() => navigate('#/admin/alumnos')}>Ir a Alumnos</Btn></div>
+          </div>
+        ) : (
+          <Card padding={0}>
+            {STUDENTS.map((s, i) => (
+              <div key={s.id} onClick={() => navigate(`#/admin/alumnos/${s.id}`)} style={{
                 display: 'flex', alignItems: 'center', gap: 12, padding: '14px 18px',
                 borderTop: i ? `1px solid ${T.border}` : 'none', cursor: 'pointer',
               }}>
                 <Avatar student={s} size={40} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6, marginBottom: 4 }}>
-                    <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600 }}>{s.name}</div>
-                    <div style={{ fontFamily: MONO, fontSize: 10, color: T.textMuted }}>{m.time}</div>
-                  </div>
-                  <div style={{ fontFamily: FONT, fontSize: 12, color: T.textDim, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.last}</div>
+                  <div style={{ fontFamily: FONT, fontSize: 13, fontWeight: 600 }}>{s.name}</div>
+                  <div style={{ fontFamily: MONO, fontSize: 11, color: T.textMuted, marginTop: 2 }}>{s.goal} · {s.level}</div>
                 </div>
-                {m.unread > 0 && (
-                  <div style={{
-                    background: T.accent, color: '#0A0A0A', borderRadius: 10,
-                    minWidth: 20, height: 20, padding: '0 7px',
-                    fontFamily: MONO, fontSize: 11, fontWeight: 700,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>{m.unread}</div>
-                )}
+                {Icon.chev(T.textMuted)}
               </div>
-            );
-          })}
-        </Card>
+            ))}
+          </Card>
+        )}
       </div>
     </div>
   );
@@ -643,6 +634,7 @@ function App() {
       <AppBody />
       <ToastHost />
       <RestTimerHost />
+      <LightboxHost />
     </>
   );
 }

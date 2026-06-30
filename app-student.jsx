@@ -269,6 +269,7 @@ function ScreenRutina() {
                   <div style={{ fontFamily: MONO, fontSize: 11, color: T.textDim }}>
                     {it.sets}×{it.reps} · {it.rest}s{it.weight ? ` · ${it.weight}kg` : ''}
                   </div>
+                  {it.technique ? <div style={{ fontFamily: MONO, fontSize: 10, color: T.accentText, marginTop: 3 }}>⚡ {it.technique}</div> : null}
                 </div>
                 {done ? (
                   <div style={{ width: 30, height: 30, borderRadius: 15, background: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -308,51 +309,25 @@ function ScreenRutina() {
   );
 }
 
-// Real exercise infographic with a fullscreen lightbox ("cómo se hace").
+// Real exercise infographic — tap to expand via the global lightbox.
 function ExerciseInfographic({ ex }) {
-  const [open, setOpen] = React.useState(false);
   return (
-    <>
-      <div onClick={() => ex.img && setOpen(true)} style={{
-        position: 'relative', marginBottom: 14, borderRadius: 16, overflow: 'hidden',
-        border: `1px solid ${T.border2}`, cursor: ex.img ? 'zoom-in' : 'default', background: T.surface2,
-      }}>
-        <ExImg ex={ex} cover={false} style={{ width: '100%', height: 360 }} />
-        {ex.img && (
-          <div style={{
-            position: 'absolute', bottom: 10, right: 10,
-            display: 'flex', alignItems: 'center', gap: 6,
-            background: 'rgba(10,10,10,0.78)', backdropFilter: 'blur(6px)',
-            border: `1px solid ${T.border2}`, borderRadius: 999, padding: '7px 12px',
-          }}>
-            {Icon.expand ? Icon.expand(T.accent) : null}
-            <span style={{ fontFamily: MONO, fontSize: 10, color: T.accent, textTransform: 'uppercase', letterSpacing: 1 }}>Ver cómo se hace</span>
-          </div>
-        )}
-      </div>
-      {open && ReactDOM.createPortal(
-        <div onClick={() => setOpen(false)} style={{
-          position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.92)',
-          display: 'flex', flexDirection: 'column', animation: 'tn-toast-in .15s ease-out',
+    <div onClick={() => openLightbox(ex)} style={{
+      position: 'relative', marginBottom: 14, borderRadius: 16, overflow: 'hidden',
+      border: `1px solid ${T.border2}`, cursor: ex.img ? 'zoom-in' : 'default', background: T.surface2,
+    }}>
+      <ExImg ex={ex} cover={false} style={{ width: '100%', height: 360 }} />
+      {ex.img && (
+        <div style={{
+          position: 'absolute', bottom: 10, right: 10,
+          display: 'flex', alignItems: 'center', gap: 6,
+          background: 'rgba(10,10,10,0.78)', backdropFilter: 'blur(6px)',
+          border: `1px solid ${T.border2}`, borderRadius: 999, padding: '7px 12px',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', flexShrink: 0 }}>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ex.es}</div>
-              <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{ex.group} · {ex.equipment}</div>
-            </div>
-            <button onClick={() => setOpen(false)} style={{
-              width: 38, height: 38, borderRadius: 19, flexShrink: 0,
-              background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', cursor: 'pointer',
-              fontSize: 22, lineHeight: 1,
-            }}>×</button>
-          </div>
-          <div onClick={(e) => e.stopPropagation()} style={{ flex: 1, overflow: 'auto', padding: '0 12px 24px', WebkitOverflowScrolling: 'touch' }}>
-            <img src={ex.img} alt={ex.es} style={{ width: '100%', maxWidth: 700, margin: '0 auto', display: 'block', borderRadius: 12 }} />
-          </div>
-        </div>,
-        document.body,
+          <span style={{ fontFamily: MONO, fontSize: 10, color: T.accent, textTransform: 'uppercase', letterSpacing: 1 }}>⤢ Ver cómo se hace</span>
+        </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -398,6 +373,16 @@ function ScreenEjercicio({ exId }) {
           <Chip>{it.rest}s descanso</Chip>
           {it.weight ? <Chip>{it.weight}kg sugerido</Chip> : null}
         </div>
+
+        {it.technique ? (
+          <div style={{ background: 'rgba(46,230,213,0.10)', border: `1px solid ${T.accent}55`, borderRadius: 12, padding: '12px 14px', marginBottom: 14, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <div style={{ fontSize: 18, lineHeight: 1 }}>⚡</div>
+            <div>
+              <div style={{ fontFamily: MONO, fontSize: 10, color: T.accentText, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 3 }}>Técnica de intensidad</div>
+              <div style={{ fontFamily: FONT, fontSize: 13, color: T.text, lineHeight: 1.5 }}>{it.technique}</div>
+            </div>
+          </div>
+        ) : null}
 
         {/* Sets logger */}
         <Card style={{ marginBottom: 14, padding: 0 }} padding={0}>

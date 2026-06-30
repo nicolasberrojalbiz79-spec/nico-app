@@ -292,10 +292,41 @@ function expandRoutine(def) {
   };
 }
 
-// Routines start empty — filled from Supabase per trainer (empezar de cero).
-// The DT/ROUTINE_DEFS templates above stay available as optional starting
-// points (ROUTINE_TEMPLATES) but are NOT preloaded as data.
-const ROUTINE_TEMPLATES = [...ROUTINE_DEFS, ...EXTRA_DEFS].map(expandRoutine);
+// 12 rutinas más para superar 50, compuestas con los DT existentes.
+const MORE_DEFS = [
+  { id:'fb-express-3d', name:'Full Body Express 3D', level:'Principiante', goal:'Salud general', weeks:6, desc:'Tres full body cortos para empezar.', days:[DT.fbC, REST_DAY, DT.fbA, REST_DAY, DT.fbB, REST_DAY, REST_DAY] },
+  { id:'gluteo-express-p', name:'Glúteo Express Principiante', level:'Principiante', goal:'Hipertrofia', weeks:8, desc:'Foco glúteo 2 días + máquinas.', days:[DT.gluteA, REST_DAY, DT.machB, REST_DAY, DT.gluteB, REST_DAY, REST_DAY] },
+  { id:'torso-maquinas-p', name:'Tren Superior en Máquinas', level:'Principiante', goal:'Hipertrofia', weeks:8, desc:'Torso en máquinas guiadas.', days:[DT.machA, REST_DAY, DT.machB, REST_DAY, DT.machA, REST_DAY, REST_DAY] },
+  { id:'ppl-clasico-3d', name:'PPL Clásico 3D', level:'Intermedio', goal:'Hipertrofia', weeks:10, desc:'Push Pull Legs frecuencia 1.', days:[DT.pushB, REST_DAY, DT.pullB, REST_DAY, DT.legsB, REST_DAY, REST_DAY] },
+  { id:'tp-intensivo', name:'Torso/Pierna Intensivo', level:'Intermedio', goal:'Hipertrofia', weeks:12, desc:'4 días torso/pierna.', days:[DT.upperB, DT.lowerB, REST_DAY, DT.upperA, DT.lowerA, REST_DAY, REST_DAY] },
+  { id:'bro-volumen', name:'Bro Split Volumen', level:'Intermedio', goal:'Hipertrofia', weeks:10, desc:'Un grupo por día, alto volumen.', days:[DT.back, DT.chest, DT.legsBro, DT.shoulders, DT.arms, REST_DAY, REST_DAY] },
+  { id:'recomp-metab', name:'Recomp Metabólico', level:'Intermedio', goal:'Recomposición', weeks:10, desc:'Pesas + circuitos.', days:[DT.upperA, DT.recompB, DT.lowerA, DT.recompC, DT.recompA, REST_DAY, REST_DAY] },
+  { id:'def-5d', name:'Definición 5 Días', level:'Intermedio', goal:'Pérdida de grasa', weeks:8, desc:'Densidad alta para definir.', days:[DT.pushA, DT.pullA, DT.recompA, DT.legsA, DT.recompC, REST_DAY, REST_DAY] },
+  { id:'powerbuild-pro', name:'Powerbuilding Pro', level:'Avanzado', goal:'Fuerza', weeks:12, desc:'Básicos pesados + accesorios.', days:[DT.plSquat, DT.back, DT.plBench, DT.shoulders, DT.plDead, REST_DAY, REST_DAY] },
+  { id:'arnold-pro', name:'Arnold Split Pro', level:'Avanzado', goal:'Hipertrofia', weeks:12, desc:'6 días estilo Arnold.', days:[DT.chest, DT.back, DT.shoulders, DT.arms, DT.legsBro, DT.legsB, REST_DAY] },
+  { id:'ppl-av-6d-2', name:'PPL Avanzado 6D', level:'Avanzado', goal:'Hipertrofia', weeks:12, desc:'PPL doble alta intensidad.', days:[DT.pushA, DT.pullA, DT.legsA, DT.pushB, DT.pullB, DT.legsB, REST_DAY] },
+  { id:'hibrido-atleta', name:'Híbrido Atleta', level:'Avanzado', goal:'Recomposición', weeks:10, desc:'Fuerza + metabólico.', days:[DT.plSquat, DT.recompA, DT.plDead, DT.recompB, DT.chest, REST_DAY, REST_DAY] },
+];
+
+// Técnicas avanzadas: superseries y drop sets en intermedio/avanzado.
+function tnApplyTechniques(r) {
+  if (r.level === 'Principiante') return r;
+  r.days.forEach((d) => {
+    const exs = d.exercises || [];
+    if (exs.length < 2) return;
+    const a = exs[exs.length - 2], b = exs[exs.length - 1];
+    const exB = (typeof findExercise === 'function') ? findExercise(b.id) : null;
+    a.technique = 'Superserie ⮕ encadenar con el siguiente sin descanso';
+    b.technique = 'Superserie (2º ejercicio). Descansá recién al terminar ambos';
+    if (r.level === 'Avanzado' && exs[2]) exs[2].technique = 'Drop set en la última serie: bajá 20% el peso y seguí al fallo';
+    else if (r.level === 'Intermedio' && exs[3]) exs[3].technique = 'Última serie al fallo (RPE 10)';
+  });
+  return r;
+}
+
+// Templates seleccionables por el entrenador (≥50). NO se precargan como datos:
+// se clonan a la base cuando el entrenador los asigna o los usa de base.
+const ROUTINE_TEMPLATES = [...ROUTINE_DEFS, ...EXTRA_DEFS, ...MORE_DEFS].map(expandRoutine).map(tnApplyTechniques);
 const ROUTINES = [];
 function tnSetRoutines(arr) { ROUTINES.length = 0; arr.forEach((r) => ROUTINES.push(r)); }
 function findRoutine(id) { return ROUTINES.find((r) => r.id === id); }

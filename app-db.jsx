@@ -35,7 +35,7 @@ async function tnGetProfile(uid) {
 function exRowToObj(r) {
   return {
     id: r.id, es: r.es, en: r.en, group: r.muscle_group, equipment: r.equipment,
-    level: r.level, d: r.drive_id, img: driveImgUrl(r.drive_id),
+    level: r.level, d: r.drive_id, img: r.image_url || driveImgUrl(r.drive_id),
     primary: r.primary_muscles || [], secondary: r.secondary_muscles || [],
     tip: r.tip || '', errors: r.errors || [],
   };
@@ -96,7 +96,7 @@ async function dbLoadRoutines(trainerId) {
     const rdays = (days || []).filter(d => d.routine_id === r.id).map(d => ({
       id: d.id, day: d.day_label, name: d.name, focus: d.focus, idx: d.idx,
       exercises: items.filter(i => i.day_id === d.id).map(i => ({
-        itemId: i.id, id: i.exercise_id, sets: i.sets, reps: i.reps, rest: i.rest, weight: i.weight,
+        itemId: i.id, id: i.exercise_id, sets: i.sets, reps: i.reps, rest: i.rest, weight: i.weight, technique: i.technique || '',
       })),
     }));
     const trainDays = rdays.filter(d => d.exercises.length);
@@ -127,7 +127,7 @@ async function dbCreateRoutine(trainerId, r) {
     if (exs.length) {
       const rows = exs.map((e, j) => ({
         day_id: day.id, exercise_id: e.id, idx: j,
-        sets: e.sets || 3, reps: String(e.reps || '10'), rest: e.rest || 90, weight: e.weight || 0,
+        sets: e.sets || 3, reps: String(e.reps || '10'), rest: e.rest || 90, weight: e.weight || 0, technique: e.technique || '',
       }));
       const { error: ie } = await sb.from('tn_routine_items').insert(rows);
       if (ie) throw ie;
@@ -235,7 +235,7 @@ async function dbAssignPlan(studentId, planId) {
 }
 
 Object.assign(window, {
-  sb, tnSignUp, tnSignIn, tnSignOut, tnGetSession, tnGetProfile,
+  sb, SUPABASE_URL, SUPABASE_KEY, tnSignUp, tnSignIn, tnSignOut, tnGetSession, tnGetProfile,
   dbLoadExercises, dbLoadStudents, dbAddStudent, dbUpdateStudent, dbAssignRoutine,
   dbLoadRoutines, dbCreateRoutine, dbDeleteRoutine, dbCreateEmptyRoutine,
   dbAddItem, dbRemoveItem, dbUpdateItem, dbUpdateDay,

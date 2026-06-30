@@ -46,7 +46,7 @@ async function bootstrapStudent(uid, email) {
       let items = [];
       if (dayIds.length) { const { data: it } = await sb.from('tn_routine_items').select('*').in('day_id', dayIds).order('idx'); items = it || []; }
       const rdays = (days || []).map((d) => ({ id: d.id, day: d.day_label, name: d.name, focus: d.focus, idx: d.idx,
-        exercises: items.filter((i) => i.day_id === d.id).map((i) => ({ id: i.exercise_id, sets: i.sets, reps: i.reps, rest: i.rest, weight: i.weight })) }));
+        exercises: items.filter((i) => i.day_id === d.id).map((i) => ({ id: i.exercise_id, sets: i.sets, reps: i.reps, rest: i.rest, weight: i.weight, technique: i.technique || '' })) }));
       tnSetRoutines([{ id: r.id, name: r.name, level: r.level, goal: r.goal, weeks: r.weeks, totalWeeks: r.weeks, week: 1, desc: r.description || '', days: rdays }]);
     }
   } else { tnSetRoutines([]); }
@@ -79,6 +79,19 @@ async function tnLogWeightDB(studentId, kg) {
   setStore((st) => ({ bodyWeight: studentId === st.studentId ? kg : st.bodyWeight, weightLog: { ...st.weightLog, [studentId]: [...log, kg] } }));
   bumpData();
 }
+// Crear acceso (cuenta + contraseña) para un alumno y devolver credenciales.
+async function tnCreateAccessDB(studentId) {
+  const { data, error } = await sb.functions.invoke('create-student-access', { body: { student_id: studentId } });
+  if (error) {
+    let msg = error.message || 'Error creando acceso';
+    try { const ctx = await error.context?.json(); if (ctx && ctx.error) msg = ctx.error; } catch (e) {}
+    throw new Error(msg);
+  }
+  if (data && data.error) throw new Error(data.error);
+  return data; // { email, password, name }
+}
+
+// ── Acciones DB (reemplazan helpers de demo) ──────────────────
 async function tnCreateRoutineDB(routine) {
   const id = await dbCreateRoutine(TN_CTX.uid, routine);
   const fresh = await dbLoadRoutines(TN_CTX.uid);
@@ -98,12 +111,22 @@ async function tnNewEmptyRoutineDB(meta) {
   await tnReloadRoutines();
   return id;
 }
+// Clonar una plantilla (ROUTINE_TEMPLATES) a la cuenta del entrenador en la base.
+async function tnCloneTemplateDB(tpl) {
+  const id = await dbCreateRoutine(TN_CTX.uid, {
+    name: tpl.name, level: tpl.level, goal: tpl.goal, weeks: tpl.totalWeeks || tpl.weeks || 8, desc: tpl.desc || '',
+    days: tpl.days.map((d) => ({ day: d.day, name: d.name, focus: d.focus,
+      exercises: (d.exercises || []).map((e) => ({ id: e.id, sets: e.sets, reps: e.reps, rest: e.rest, weight: e.weight || 0, technique: e.technique || '' })) })),
+  });
+  await tnReloadRoutines();
+  return id;
+}
 
 Object.assign(window, {
   useDataVersion, bumpData, TN_CTX,
   bootstrapTrainer, bootstrapStudent,
   tnAddStudentDB, tnAssignRoutineDB, tnSaveNoteDB, tnLogWeightDB, tnCreateRoutineDB, tnDeleteRoutineDB,
-  tnReloadRoutines, tnNewEmptyRoutineDB,
+  tnReloadRoutines, tnNewEmptyRoutineDB, tnCloneTemplateDB, tnCreateAccessDB,
 });
 
 // ─────────────────────────────────────────────────────────────

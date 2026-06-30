@@ -451,7 +451,56 @@ Object.assign(window, {
   Icon, Card, Btn, Chip, Stat, Ring, LineChart, BarChart, ExerciseTile, ExImg, Avatar,
   toast, useToasts, ToastHost, Modal,
   startRest, addRest, stopRest, useRest, RestTimerHost,
+  openLightbox, closeLightbox, useLightbox, LightboxHost,
 });
+
+// ─────────────────────────────────────────────────────────────
+// Visor de imágenes a pantalla completa (global, robusto)
+// ─────────────────────────────────────────────────────────────
+const _lbListeners = new Set();
+let _lb = null; // { img, title, sub }
+function openLightbox(ex) {
+  if (!ex || !ex.img) return;
+  _lb = { img: ex.img, title: ex.es || '', sub: `${ex.group || ''}${ex.equipment ? ' · ' + ex.equipment : ''}` };
+  _lbListeners.forEach((l) => l());
+}
+function closeLightbox() { _lb = null; _lbListeners.forEach((l) => l()); }
+function useLightbox() {
+  return React.useSyncExternalStore(
+    (cb) => { _lbListeners.add(cb); return () => _lbListeners.delete(cb); },
+    () => _lb, () => _lb,
+  );
+}
+function LightboxHost() {
+  const lb = useLightbox();
+  React.useEffect(() => {
+    if (!lb) return;
+    const onKey = (e) => { if (e.key === 'Escape') closeLightbox(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [lb]);
+  if (!lb) return null;
+  return (
+    <div onClick={closeLightbox} style={{
+      position: 'fixed', inset: 0, zIndex: 4000, background: 'rgba(0,0,0,0.93)',
+      display: 'flex', flexDirection: 'column',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px', flexShrink: 0 }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontFamily: FONT, fontSize: 16, fontWeight: 700, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{lb.title}</div>
+          <div style={{ fontFamily: MONO, fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>{lb.sub}</div>
+        </div>
+        <button onClick={closeLightbox} aria-label="Cerrar" style={{
+          width: 40, height: 40, borderRadius: 20, flexShrink: 0,
+          background: 'rgba(255,255,255,0.12)', border: 'none', color: '#fff', cursor: 'pointer', fontSize: 24, lineHeight: 1,
+        }}>×</button>
+      </div>
+      <div onClick={(e) => e.stopPropagation()} style={{ flex: 1, overflow: 'auto', padding: '0 12px 24px', WebkitOverflowScrolling: 'touch', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+        <img src={lb.img} alt={lb.title} style={{ width: '100%', maxWidth: 760, display: 'block', borderRadius: 12 }} />
+      </div>
+    </div>
+  );
+}
 
 // ─────────────────────────────────────────────────────────────
 // Toast / Modal — global feedback
@@ -535,7 +584,7 @@ function Modal({ open, title, children, onClose, actions, width = 460 }) {
 // Inject toast animation keyframes once.
 if (typeof document !== 'undefined' && !document.getElementById('tn-anim')) {
   const s = document.createElement('style'); s.id = 'tn-anim';
-  s.textContent = '@keyframes tn-toast-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }';
+  s.textContent = '@keyframes tn-toast-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } } @keyframes tn-fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }';
   document.head.appendChild(s);
 }
 
