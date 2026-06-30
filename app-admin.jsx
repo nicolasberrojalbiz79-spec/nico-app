@@ -492,10 +492,16 @@ function AdminAlumnoDetail({ id }) {
           <Card padding={0}>
             <div style={{ padding: '14px 18px', borderBottom: `1px solid ${T.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ fontFamily: FONT, fontSize: 14, fontWeight: 600 }}>Rutina actual</div>
-              <div style={{ fontFamily: MONO, fontSize: 10, color: T.textDim }}>{stuRoutine.name}</div>
+              <div style={{ fontFamily: MONO, fontSize: 10, color: T.textDim }}>{stuRoutine ? stuRoutine.name : '—'}</div>
             </div>
             <div style={{ padding: 14 }}>
-              {stuRoutine.days.filter((d) => d.exercises.length > 0).map((d) => (
+              {!stuRoutine && (
+                <div style={{ padding: '24px 8px', textAlign: 'center', fontFamily: FONT, fontSize: 13, color: T.textDim, lineHeight: 1.6 }}>
+                  Este alumno todavía no tiene una rutina asignada.<br />
+                  <span style={{ display: 'inline-block', marginTop: 10 }}><Btn primary onClick={() => navigate('#/admin/biblioteca')}>Asignar rutina</Btn></span>
+                </div>
+              )}
+              {stuRoutine && stuRoutine.days.filter((d) => d.exercises.length > 0).map((d) => (
                 <div key={d.id} style={{ marginBottom: 14, paddingBottom: 14, borderBottom: `1px solid ${T.border}` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 8 }}>
                     <div>
@@ -506,7 +512,7 @@ function AdminAlumnoDetail({ id }) {
                   </div>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     {d.exercises.map((it) => {
-                      const ex = findExercise(it.id);
+                      const ex = findExercise(it.id) || { es: it.id };
                       return (
                         <div key={it.id} style={{
                           fontFamily: FONT, fontSize: 11, color: T.textDim,
